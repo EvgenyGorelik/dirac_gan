@@ -1,2 +1,2 @@
-# dirac_gan
+# Dirac GAN
 DGM Dirac GAN Paper Project
