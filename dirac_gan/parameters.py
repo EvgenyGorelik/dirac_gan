@@ -3,21 +3,26 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from collections import deque
 
+
 # f function as defined in paper
 def f(t):
     return -np.log(1+np.exp(-t))
+
 
 # derivative of f
 def df(t):
     return (1+np.exp(t))**-1
 
+
 # canonical discriminator
 def D_phi(x,phi):
     return phi*x
 
+
 # unregularized loss
 def L(theta, phi):
     return f(theta*phi) + f(0)
+
 
 # derivation of L for theta
 def dL_theta(theta, phi):
