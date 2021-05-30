@@ -1,4 +1,6 @@
 from pyqtgraph.Qt import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 import numpy as np
 from numpy import arange, sin, cos, pi
 import pyqtgraph as pg
@@ -12,22 +14,69 @@ class Plot2D(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         # set up plot configurations
         super(Plot2D, self).__init__(*args, **kwargs)
+
         self.graphWidget = pg.PlotWidget()
         self.graphWidget.setXRange(-1, 1, padding=0)
         self.graphWidget.setYRange(-1, 1, padding=0)
         self.graphWidget.getPlotItem().hideAxis('bottom')
         self.graphWidget.getPlotItem().hideAxis('left')
-        self.setCentralWidget(self.graphWidget)
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(50)
+        self.timer.timeout.connect(self.trace)
+
+        self.e1 = QLineEdit("100")
+        self.e1.setValidator(QtGui.QIntValidator())
+        self.e1.setMaxLength(3)
+        self.e1.setAlignment(Qt.AlignRight)
+
+        self.e2 = QLineEdit("0.5")
+        self.e2.setValidator(QtGui.QDoubleValidator())
+        self.e2.setMaxLength(3)
+        self.e2.setAlignment(Qt.AlignRight)
+
+        flo = QFormLayout()
+        flo.addRow("Number of Samples", self.e1)
+        flo.addRow("Learning Rate", self.e2)
+
+        buttonlayout = QHBoxLayout()
+        mainlayout = QVBoxLayout()
+        mainlayout.addWidget(self.graphWidget)
+        textbox = QGroupBox()
+        textbox.setLayout(flo)
+        mainlayout.addWidget(textbox)
+
+        b1 = QPushButton("Start Animation")
+        b1.setCheckable(True)
+        b1.clicked.connect(self.startAnimation)
+        buttonlayout.addWidget(b1)
+        b2 = QPushButton("Stop Animation")
+        b2.setCheckable(True)
+        b2.clicked.connect(self.stopAnimation)
+        buttonlayout.addWidget(b2)
+        buttonbox = QGroupBox(self)
+        buttonbox.setLayout(buttonlayout)
+        mainlayout.addWidget(buttonbox)
+
+        mainbox = QGroupBox(self)
+        mainbox.setLayout(mainlayout)
+        self.setCentralWidget(mainbox)
 
         # Enable antialiasing for prettier plots
         pg.setConfigOptions(antialias=True)
 
+
+    def stopAnimation(self):
+        self.timer.stop()
+
+
+    def startAnimation(self):
+        self.graphWidget.clear()
         # number of samples for the plot
-        self.n = 100
+        self.n = int(self.e1.text())
         # learning rate
-        h = 0.5
+        self.h = float(self.e2.text())
         # some smart function to chose the regularizer here
-        self.regularize = regularizers.Reg1(h)
+        self.regularize = regularizers.Reg1(self.h)
         #self.regularize = regularizers.No_Reg(h)
 
         # initialize theta and phi for each sample
@@ -46,12 +95,9 @@ class Plot2D(QtWidgets.QMainWindow):
             self.points.append(self.graphWidget.plot(pen=None, symbol='o', symbolSize=5,
                                                  symbolBrush=self.color[i]))
             self.traces.append(self.graphWidget.plot(width=1))
-
         # set up activation function
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(50)
-        self.timer.timeout.connect(self.trace)
         self.timer.start()
+
 
     # activation function
     def trace(self):
