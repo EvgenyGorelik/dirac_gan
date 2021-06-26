@@ -18,18 +18,21 @@ def D_phi(x, phi):
 
 # see paper: formula 101
 def R(theta,phi):
-    #return self.h / 2 * (self.dL_theta(theta, phi) ** 2 + self.dL_phi(theta, phi) ** 2)
     return h / 2 * (((df(theta * phi) * phi) ** 2) + (df(theta * phi) * theta) ** 2)
 
 # gradient for theta (by hand)
 def dR_theta(theta,phi):
-    return -(h * theta * ((theta * phi - 1) * np.exp(theta * phi) - 1) 
-             + h * (phi ** 3) * np.exp(theta * phi)) / ((np.exp(theta * phi)+1) ** 3)
+    #gradient: -(h * theta * ((theta * phi - 1) * np.exp(theta * phi) - 1) 
+    #            + h * (phi ** 3) * np.exp(theta * phi)) / ((np.exp(theta * phi)+1) ** 3)
+    return -(theta * ((theta * phi - 1) * np.exp(theta * phi) - 1) 
+             + (phi ** 3) * np.exp(theta * phi)) / ((np.exp(theta * phi)+1) ** 3)
 
 # gradient for phi (by hand)
 def dR_phi(theta,phi):
-    return -(h * phi * ((theta * phi - 1) * np.exp(theta * phi) - 1) 
-             + h * (theta ** 3) * np.exp(theta * phi)) / ((np.exp(theta * phi)+1) ** 3)
+    #gradient: -(h * phi * ((theta * phi - 1) * np.exp(theta * phi) - 1) 
+    #            + h * (theta ** 3) * np.exp(theta * phi)) / ((np.exp(theta * phi)+1) ** 3)
+    return -(phi * ((theta * phi - 1) * np.exp(theta * phi) - 1) 
+             + (theta ** 3) * np.exp(theta * phi)) / ((np.exp(theta * phi)+1) ** 3)
 
 # unregularized loss
 def L(theta, phi):

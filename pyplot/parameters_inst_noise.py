@@ -16,15 +16,6 @@ def df(t):
 def D_phi(x, phi):
     return phi * x
 
-""" Not needed here?
-def R(self,theta):
-    return self.h * np.random.normal() * theta
-
-# 
-def dR_phi(self,phi):
-    return self.h * np.random.normal()
-"""
-
 # unregularized loss
 def L(theta, phi, noise):
     return f((theta + noise) * phi) + f(0)
@@ -35,22 +26,22 @@ def dL_theta(theta, phi, noise):
 
 # derivation of L for phi
 def dL_phi(theta, phi, t_noise, x_noise):
-    #return df(theta * phi) * theta + df(noise * phi) * noise
     return df((theta + t_noise) * phi) * (theta + t_noise) - df(-x_noise * phi) * x_noise
 
 # update step in Alternating Gradient Descent
-def AGD_step(theta, phi, h, std=0.1):
-    #noise = np.random.normal()
-    t_noise = std * np.random.normal()
-    x_noise = std * np.random.normal()
+def AGD_step(theta, phi, h, std=1):
+    t_noise = np.random.normal(scale=std, size=1000)
+    x_noise = np.random.normal(scale=std, size=1000)
+    theta = np.full_like(t_noise, theta)
+    phi_vec = np.full_like(theta, phi)
     theta -= h * dL_theta(theta, phi, t_noise)
-    phi += h * dL_phi(theta, phi, t_noise, x_noise)
-    return theta, phi
+    phi_vec += h * dL_phi(theta, phi, t_noise, x_noise)
+    return np.mean(theta), np.mean(phi_vec)
 
 
 history_len = 400  # how many trajectory points to display
 
-h = 0.05
+h = 0.1
 theta = [np.random.rand()]
 phi = [np.random.rand()]
 
