@@ -29,6 +29,11 @@ class Plot2D(QtWidgets.QMainWindow):
         self.comboBox.addItem("R1 Regularizer")
         self.comboBox.addItem("WGAN Regularizer")
         self.comboBox.addItem("WGAN-GP Regularizer")
+        self.comboBox.addItem("Moving Average Regularizer")
+        self.comboBox.addItem("NS-GAN with no Regularizer")
+        self.comboBox.addItem("Consensus Optimization Regularizer")
+        self.comboBox.addItem("Instance Noise Regularizer")
+
 
 
         self.e1 = QLineEdit("100")
@@ -42,13 +47,13 @@ class Plot2D(QtWidgets.QMainWindow):
         self.e2.setAlignment(Qt.AlignRight)
 
         flo = QFormLayout()
+        flo.addRow(self.comboBox)
         flo.addRow("Number of Samples", self.e1)
         flo.addRow("Learning Rate", self.e2)
 
         buttonlayout = QHBoxLayout()
         mainlayout = QVBoxLayout()
         mainlayout.addWidget(self.graphWidget)
-        mainlayout.addWidget(self.comboBox)
         textbox = QGroupBox()
         textbox.setLayout(flo)
         mainlayout.addWidget(textbox)
@@ -98,6 +103,18 @@ class Plot2D(QtWidgets.QMainWindow):
             gamma = 1.0
             g_0 = 0.3
             self.regularize = regularizers.WGAN_GP_reg(self.h, n_critic, gamma, g_0)
+        elif self.comboBox.currentText() == "Moving Average Regularizer":
+            alpha_r = 0
+            alpha_f = 0
+            gamma = 0.99
+            lambd = 0.99
+            self.regularize = regularizers.Moving_Average_Reg(self.h,alpha_r,alpha_f,gamma,lambd)
+        elif self.comboBox.currentText() == "NS-GAN with no Regularizer":
+            self.regularize = regularizers.No_Reg_Non_Sat(self.h)
+        elif self.comboBox.currentText() == "Consensus Optimization Regularizer":
+            self.regularize = regularizers.Reg_Cons_Opt(self.h)
+        elif self.comboBox.currentText() == "Instance Noise Regularizer":
+            self.regularize = regularizers.Reg_Inst_Noise(self.h)
 
         # initialize theta and phi for each sample
         self.theta = np.random.rand(self.n, 1)*2-1
