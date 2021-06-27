@@ -20,27 +20,29 @@ def D_phi(x, phi):
 
 
 # unregularized loss
-def L(theta, phi):
-    return f(theta*phi) + f(0)
+def L(theta, phi,noise):
+    return f(theta*phi) + f(noise)
 
 
 # derivation of L for theta
-def dL_theta(theta, phi):
-    return df(theta*phi)*phi
+def dL_theta(sigma):
+    return df(0)*sigma
 
 # derivation of L for phi
-def dL_phi(theta, phi):
-    return df(theta*phi)*theta
+def dL_phi(sigma):
+    return df(0)*sigma
 
 # update step in Alternating Gradient Descent
 def AGD_step(theta, phi, h):
-    theta -= h * dL_theta(theta,phi)
-    phi += h * dL_phi(theta,phi)
+    noise = np.random.normal(0, sigma)
+    theta -= h * dL_theta(sigma)
+    phi += h * dL_phi(sigma)
     return theta, phi
 
 
 history_len = 100  # how many trajectory points to display
 
+sigma = 5
 h = 0.5
 theta = [np.random.rand()]
 phi = [np.random.rand()]
@@ -82,4 +84,4 @@ def animate(i):
 
 
 ani = animation.FuncAnimation(fig, animate, 50, interval=100, blit=True)
-#plt.show()
+plt.show()

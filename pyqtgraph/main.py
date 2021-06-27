@@ -24,6 +24,13 @@ class Plot2D(QtWidgets.QMainWindow):
         self.timer.setInterval(50)
         self.timer.timeout.connect(self.trace)
 
+        self.comboBox = QtGui.QComboBox(self)
+        self.comboBox.addItem("No Regularizer")
+        self.comboBox.addItem("R1 Regularizer")
+        self.comboBox.addItem("WGAN Regularizer")
+        self.comboBox.addItem("WGAN-GP Regularizer")
+
+
         self.e1 = QLineEdit("100")
         self.e1.setValidator(QtGui.QIntValidator())
         self.e1.setMaxLength(3)
@@ -31,7 +38,7 @@ class Plot2D(QtWidgets.QMainWindow):
 
         self.e2 = QLineEdit("0.5")
         self.e2.setValidator(QtGui.QDoubleValidator())
-        self.e2.setMaxLength(3)
+        self.e2.setMaxLength(5)
         self.e2.setAlignment(Qt.AlignRight)
 
         flo = QFormLayout()
@@ -41,6 +48,7 @@ class Plot2D(QtWidgets.QMainWindow):
         buttonlayout = QHBoxLayout()
         mainlayout = QVBoxLayout()
         mainlayout.addWidget(self.graphWidget)
+        mainlayout.addWidget(self.comboBox)
         textbox = QGroupBox()
         textbox.setLayout(flo)
         mainlayout.addWidget(textbox)
@@ -76,12 +84,24 @@ class Plot2D(QtWidgets.QMainWindow):
         # learning rate
         self.h = float(self.e2.text())
         # some smart function to chose the regularizer here
-        self.regularize = regularizers.Reg1(self.h)
-        #self.regularize = regularizers.No_Reg(h)
+        if self.comboBox.currentText() == "No Regularizer":
+            self.regularize = regularizers.No_Reg(self.h)
+        elif self.comboBox.currentText() == "R1 Regularizer":
+            reg = 0.3
+            self.regularize = regularizers.Reg1(self.h, reg)
+        elif self.comboBox.currentText() == "WGAN Regularizer":
+            n_critic = 5
+            c = 1
+            self.regularize = regularizers.WGAN_Reg(self.h, n_critic, c)
+        elif self.comboBox.currentText() == "WGAN-GP Regularizer":
+            n_critic = 5
+            gamma = 1.0
+            g_0 = 0.3
+            self.regularize = regularizers.WGAN_GP_reg(self.h, n_critic, gamma, g_0)
 
         # initialize theta and phi for each sample
-        self.theta = np.random.rand(self.n,1)*2-1
-        self.phi = np.random.rand(self.n,1)*2-1
+        self.theta = np.random.rand(self.n, 1)*2-1
+        self.phi = np.random.rand(self.n, 1)*2-1
         self.history_theta = []
         self.history_phi = []
         self.color = []
@@ -91,7 +111,7 @@ class Plot2D(QtWidgets.QMainWindow):
         for i in range(self.n):
             self.history_theta.append(self.theta[i])
             self.history_phi.append(self.phi[i])
-            self.color.append((np.random.rand()*255,np.random.rand()*255,np.random.rand()*255))
+            self.color.append((np.random.rand()*255, np.random.rand()*255, np.random.rand()*255))
             self.points.append(self.graphWidget.plot(pen=None, symbol='o', symbolSize=5,
                                                  symbolBrush=self.color[i]))
             self.traces.append(self.graphWidget.plot(width=1))
@@ -106,7 +126,7 @@ class Plot2D(QtWidgets.QMainWindow):
             self.theta[i], self.phi[i] = self.regularize.AGD_step(self.theta[i], self.phi[i])
             self.history_theta[i] = np.append(self.history_theta[i], self.theta[i])
             self.history_phi[i] = np.append(self.history_phi[i], self.phi[i])
-            self.traces[i].setData(self.history_phi[i],self.history_theta[i])
+            self.traces[i].setData(self.history_phi[i], self.history_theta[i])
             self.points[i].setData([self.phi[i]], [self.theta[i]])
 
 ## Start Qt event loop unless running in interactive mode or using pyside.

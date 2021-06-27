@@ -1,23 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+from matplotlib.animation import FuncAnimation
 from collections import deque
 
 
+def clip(x, c):
+    return np.clip(x, a_max=c, a_min=-c)
+
 # f function as defined in paper
 def f(t):
-    return -np.log(1+np.exp(-t))
+    return t
 
 
 # derivative of f
 def df(t):
-    return (1+np.exp(t))**-1
+    return 1
 
 
 # canonical discriminator
-def D_phi(x, phi):
+def D_phi(x,phi):
     return phi*x
-
 
 # unregularized loss
 def L(theta, phi):
@@ -34,13 +36,16 @@ def dL_phi(theta, phi):
 
 # update step in Alternating Gradient Descent
 def AGD_step(theta, phi, h):
+    for i in range(n_critic):
+        phi += h * dL_phi(theta, phi)
     theta -= h * dL_theta(theta,phi)
-    phi += h * dL_phi(theta,phi)
-    return theta, phi
+    return clip(theta,c), clip(phi,c)
 
 
 history_len = 100  # how many trajectory points to display
 
+n_critic = 5
+c = 0.5
 h = 0.5
 theta = [np.random.rand()]
 phi = [np.random.rand()]
@@ -81,5 +86,5 @@ def animate(i):
     return line, trace, time_text
 
 
-ani = animation.FuncAnimation(fig, animate, 50, interval=100, blit=True)
-#plt.show()
+ani = FuncAnimation(fig, animate, 50, interval=100, blit=True)
+plt.show()

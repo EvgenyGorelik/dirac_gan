@@ -82,4 +82,6 @@ def animate(i):
 
 
 ani = FuncAnimation(fig, animate, 50, interval=100, blit=True)
-plt.show()
+#plt.show()
+
+#ani.save('myAnimation.gif', writer='imagemagick', fps=30)
