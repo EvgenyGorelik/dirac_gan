@@ -34,7 +34,9 @@ class Plot2D(QtWidgets.QMainWindow):
         self.comboBox.addItem("Consensus Optimization Regularizer")
         self.comboBox.addItem("Instance Noise Regularizer")
 
-
+        self.gd_method = QtGui.QComboBox(self)
+        self.gd_method.addItem("Alternating Gradient Descent")
+        self.gd_method.addItem("Simultaneous Gradient Descent")
 
         self.e1 = QLineEdit("100")
         self.e1.setValidator(QtGui.QIntValidator())
@@ -48,6 +50,7 @@ class Plot2D(QtWidgets.QMainWindow):
 
         flo = QFormLayout()
         flo.addRow(self.comboBox)
+        flo.addRow(self.gd_method)
         flo.addRow("Number of Samples", self.e1)
         flo.addRow("Learning Rate", self.e2)
 
@@ -140,7 +143,10 @@ class Plot2D(QtWidgets.QMainWindow):
     def trace(self):
         #iterates over all samples
         for i in range(self.n):
-            self.theta[i], self.phi[i] = self.regularize.AGD_step(self.theta[i], self.phi[i])
+            if self.gd_method.currentText() == "Alternating Gradient Descent":
+                self.theta[i], self.phi[i] = self.regularize.AGD_step(self.theta[i], self.phi[i])
+            if self.gd_method.currentText() == "Simultaneous Gradient Descent":
+                self.theta[i], self.phi[i] = self.regularize.SGD_step(self.theta[i], self.phi[i])
             self.history_theta[i] = np.append(self.history_theta[i], self.theta[i])
             self.history_phi[i] = np.append(self.history_phi[i], self.phi[i])
             self.traces[i].setData(self.history_phi[i], self.history_theta[i])

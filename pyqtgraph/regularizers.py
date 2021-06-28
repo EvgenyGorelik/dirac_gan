@@ -19,8 +19,9 @@ class Reg1():
 
     # update step in Alternating Gradient Descent
     def SGD_step(self, theta, psi):
+        psi_old = psi*1
         psi += self.h * (f(theta*psi)*theta - self.reg * psi)
-        theta -= self.h * (f(theta*psi)*psi)
+        theta -= self.h * (f(theta*psi_old)*psi_old)
         return theta, psi
 
 
@@ -36,8 +37,9 @@ class No_Reg():
 
     # update step in Alternating Gradient Descent
     def SGD_step(self,theta, psi):
+        psi_old = psi*1
         psi += self.h * theta * f(theta*psi)
-        theta -= self.h * psi * f(psi*theta)
+        theta -= self.h * psi_old * f(psi_old*theta)
         return theta, psi
 
 class WGAN_Reg():
@@ -58,9 +60,10 @@ class WGAN_Reg():
 
     # update step in Alternating Gradient Descent
     def SGD_step(self, theta, psi):
+        psi_old = psi*1
         for i in range(self.n_critic):
             psi += self.h * theta * f(theta*psi)
-        theta -= self.h * psi * f(theta*psi)
+        theta -= self.h * psi_old * f(theta*psi_old)
         return self.clip(theta), self.clip(psi)
 
 
@@ -138,6 +141,20 @@ class Moving_Average_Reg():
 
         return theta, phi
 
+    # update step in Alternating Gradient Descent
+    def SGD_step(self,theta, phi):
+        theta_old = theta*1
+        theta -= self.h * self.dL_theta(theta, phi)
+        phi -= self.h * self.dL_phi(theta_old, phi)
+
+        # moving average that tracks the discriminators predictions of the real samples
+        # useless as for the dirac gan the discriminators predictions of the real samples always is phi*0=0
+        self.alpha_r = self.gamma * self.alpha_r + (1.0 - self.gamma) * self.D_phi(0, phi)
+        # moving average that tracks the discriminators predictions of the generated samples
+        self.alpha_f = self.gamma * self.alpha_f + (1.0 - self.gamma) * self.D_phi(theta_old, phi)
+
+        return theta, phi
+
 
 class No_Reg_Non_Sat():
     def __init__(self, h):
@@ -175,6 +192,14 @@ class No_Reg_Non_Sat():
         theta -= self.h * self.dL_theta(-theta, phi)
         phi += self.h * self.dL_phi(theta, phi)
         return theta, phi
+
+    # update step in Alternating Gradient Descent
+    def SGD_step(self, theta, phi):
+        theta_old = phi*1
+        theta -= self.h * self.dL_theta(-theta, phi)
+        phi += self.h * self.dL_phi(theta_old, phi)
+        return theta, phi
+
 
 
 class Reg_Cons_Opt():
@@ -230,6 +255,13 @@ class Reg_Cons_Opt():
         phi += self.h * self.dL_phi(theta, phi)
         return theta, phi
 
+    # update step in Alternating Gradient Descent
+    def SGD_step(self, theta, phi):
+        theta_old = theta*1
+        theta -= self.h * self.dL_theta(theta, phi)
+        phi += self.h * self.dL_phi(theta_old, phi)
+        return theta, phi
+
 
 class Reg_Inst_Noise():
     def __init__(self, h):
@@ -267,4 +299,16 @@ class Reg_Inst_Noise():
         phi_vec = np.full_like(theta, phi)
         theta -= self.h * self.dL_theta(theta, phi, t_noise)
         phi_vec += self.h * self.dL_phi(theta, phi, t_noise, x_noise)
+        return np.mean(theta), np.mean(phi_vec)
+
+
+    # update step in Alternating Gradient Descent
+    def SGD_step(self, theta, phi, std=1):
+        theta_old = theta*1
+        t_noise = np.random.normal(scale=std, size=1000)
+        x_noise = np.random.normal(scale=std, size=1000)
+        theta = np.full_like(t_noise, theta)
+        phi_vec = np.full_like(theta, phi)
+        theta -= self.h * self.dL_theta(theta, phi, t_noise)
+        phi_vec += self.h * self.dL_phi(theta_old, phi, t_noise, x_noise)
         return np.mean(theta), np.mean(phi_vec)
