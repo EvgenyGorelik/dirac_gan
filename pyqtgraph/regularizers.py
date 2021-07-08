@@ -17,7 +17,7 @@ class Reg1():
         theta -= self.h * (f(theta*psi)*psi)
         return theta, psi
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self, theta, psi):
         psi_old = psi*1
         psi += self.h * (f(theta*psi)*theta - self.reg * psi)
@@ -35,7 +35,7 @@ class No_Reg():
         theta -= self.h * psi * f(psi*theta)
         return theta, psi
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self,theta, psi):
         psi_old = psi*1
         psi += self.h * theta * f(theta*psi)
@@ -58,7 +58,7 @@ class WGAN_Reg():
         theta -= self.h * psi * f(theta*psi)
         return self.clip(theta), self.clip(psi)
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self, theta, psi):
         psi_old = psi*1
         for i in range(self.n_critic):
@@ -82,7 +82,7 @@ class WGAN_GP_reg():
         return theta, psi
 
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self, theta, psi):
         psi_old = psi*1
         for i in range(self.n_critic):
@@ -141,7 +141,7 @@ class Moving_Average_Reg():
 
         return theta, phi
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self,theta, phi):
         theta_old = theta*1
         theta -= self.h * self.dL_theta(theta, phi)
@@ -193,9 +193,9 @@ class No_Reg_Non_Sat():
         phi += self.h * self.dL_phi(theta, phi)
         return theta, phi
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self, theta, phi):
-        theta_old = phi*1
+        theta_old = theta*1
         theta -= self.h * self.dL_theta(-theta, phi)
         phi += self.h * self.dL_phi(theta_old, phi)
         return theta, phi
@@ -243,7 +243,7 @@ class Reg_Cons_Opt():
 
     # derivation of L for theta
     def dL_theta(self, theta, phi):
-        return self.df(theta * phi) * phi - self.dR_theta(theta, phi)
+        return self.df(theta * phi) * phi + self.dR_theta(theta, phi)
 
     # derivation of L for phi
     def dL_phi(self, theta, phi):
@@ -255,7 +255,7 @@ class Reg_Cons_Opt():
         phi += self.h * self.dL_phi(theta, phi)
         return theta, phi
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self, theta, phi):
         theta_old = theta*1
         theta -= self.h * self.dL_theta(theta, phi)
@@ -285,7 +285,7 @@ class Reg_Inst_Noise():
 
     # derivation of L for theta
     def dL_theta(self, theta, phi, noise):
-        return self.df((theta + noise) * phi) * phi  # ... * -phi
+        return self.df((theta + noise) * phi) * phi
 
     # derivation of L for phi
     def dL_phi(self, theta, phi, t_noise, x_noise):
@@ -302,7 +302,7 @@ class Reg_Inst_Noise():
         return np.mean(theta), np.mean(phi_vec)
 
 
-    # update step in Alternating Gradient Descent
+    # update step in Simultaneous Gradient Descent
     def SGD_step(self, theta, phi, std=1):
         theta_old = theta*1
         t_noise = np.random.normal(scale=std, size=1000)
