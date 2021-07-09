@@ -42,24 +42,106 @@ class Plot2D(QtWidgets.QMainWindow):
         self.e1.setValidator(QtGui.QIntValidator())
         self.e1.setMaxLength(3)
         self.e1.setAlignment(Qt.AlignRight)
-
         self.e2 = QLineEdit("0.5")
         self.e2.setValidator(QtGui.QDoubleValidator())
         self.e2.setMaxLength(5)
         self.e2.setAlignment(Qt.AlignRight)
-
         flo = QFormLayout()
         flo.addRow(self.comboBox)
         flo.addRow(self.gd_method)
         flo.addRow("Number of Samples", self.e1)
         flo.addRow("Learning Rate", self.e2)
+        textbox = QGroupBox()
+        textbox.setTitle('General Settings')
+        textbox.setLayout(flo)
+
+
+        self.e3 = QLineEdit("0.3")
+        self.e3.setValidator(QtGui.QDoubleValidator())
+        self.e3.setMaxLength(5)
+        self.e3.setAlignment(Qt.AlignRight)
+        r1_flo = QFormLayout()
+        r1_flo.addRow("Regularization Parameter", self.e3)
+        r1_textbox = QGroupBox()
+        r1_textbox.setTitle('R1 Settings')
+        r1_textbox.setLayout(r1_flo)
+
+        self.e4 = QLineEdit("5")
+        self.e4.setValidator(QtGui.QIntValidator())
+        self.e4.setMaxLength(5)
+        self.e4.setAlignment(Qt.AlignRight)
+        self.e5 = QLineEdit("1")
+        self.e5.setValidator(QtGui.QDoubleValidator())
+        self.e5.setMaxLength(5)
+        self.e5.setAlignment(Qt.AlignRight)
+        wgan_flo = QFormLayout()
+        wgan_flo.addRow("Descriminator Iterations", self.e4)
+        wgan_flo.addRow("c", self.e5)
+        wgan_textbox = QGroupBox()
+        wgan_textbox.setTitle('WGAN Settings')
+        wgan_textbox.setLayout(wgan_flo)
+
+        self.e6 = QLineEdit("5")
+        self.e6.setValidator(QtGui.QIntValidator())
+        self.e6.setMaxLength(5)
+        self.e6.setAlignment(Qt.AlignRight)
+        self.e7 = QLineEdit("1")
+        self.e7.setValidator(QtGui.QDoubleValidator())
+        self.e7.setMaxLength(5)
+        self.e7.setAlignment(Qt.AlignRight)
+        self.e8 = QLineEdit("0.3")
+        self.e8.setValidator(QtGui.QDoubleValidator())
+        self.e8.setMaxLength(5)
+        self.e8.setAlignment(Qt.AlignRight)
+        wgan_gp_flo = QFormLayout()
+        wgan_gp_flo.addRow("Descriminator Iterations", self.e6)
+        wgan_gp_flo.addRow("gamma", self.e7)
+        wgan_gp_flo.addRow("g_0", self.e8)
+        wgan_gp_textbox = QGroupBox()
+        wgan_gp_textbox.setTitle('WGAN-GP Settings')
+        wgan_gp_textbox.setLayout(wgan_gp_flo)
+
+        self.e9 = QLineEdit("0")
+        self.e9.setValidator(QtGui.QIntValidator())
+        self.e9.setMaxLength(5)
+        self.e9.setAlignment(Qt.AlignRight)
+        self.e10 = QLineEdit("0")
+        self.e10.setValidator(QtGui.QDoubleValidator())
+        self.e10.setMaxLength(5)
+        self.e10.setAlignment(Qt.AlignRight)
+        self.e11 = QLineEdit("0.99")
+        self.e11.setValidator(QtGui.QDoubleValidator())
+        self.e11.setMaxLength(5)
+        self.e11.setAlignment(Qt.AlignRight)
+        self.e12 = QLineEdit("0.99")
+        self.e12.setValidator(QtGui.QDoubleValidator())
+        self.e12.setMaxLength(5)
+        self.e12.setAlignment(Qt.AlignRight)
+        ma_flo = QFormLayout()
+        ma_flo.addRow("alpha_r", self.e9)
+        ma_flo.addRow("alpha_f", self.e10)
+        ma_flo.addRow("gamma", self.e11)
+        ma_flo.addRow("lambda", self.e12)
+        ma_textbox = QGroupBox()
+        ma_textbox.setTitle('Moving-Average Settings')
+        ma_textbox.setLayout(ma_flo)
+
+        param_flo = QHBoxLayout()
+        param_flo.addWidget(textbox)
+        param_flo.addWidget(r1_textbox)
+        param_flo.addWidget(wgan_textbox)
+        param_flo.addWidget(wgan_gp_textbox)
+        param_flo.addWidget(ma_textbox)
+        param_textbox = QGroupBox()
+        param_textbox.setTitle('Settings')
+        param_textbox.setLayout(param_flo)
+
+
 
         buttonlayout = QHBoxLayout()
         mainlayout = QVBoxLayout()
         mainlayout.addWidget(self.graphWidget)
-        textbox = QGroupBox()
-        textbox.setLayout(flo)
-        mainlayout.addWidget(textbox)
+        mainlayout.addWidget(param_textbox)
 
         b1 = QPushButton("Start Animation")
         b1.setCheckable(True)
@@ -95,23 +177,23 @@ class Plot2D(QtWidgets.QMainWindow):
         if self.comboBox.currentText() == "No Regularizer":
             self.regularize = regularizers.No_Reg(self.h)
         elif self.comboBox.currentText() == "R1 Regularizer":
-            reg = 0.3
+            reg = float(self.e3.text())
             self.regularize = regularizers.Reg1(self.h, reg)
         elif self.comboBox.currentText() == "WGAN Regularizer":
-            n_critic = 5
-            c = 1
+            n_critic = int(self.e4.text())
+            c = float(self.e5.text())
             self.regularize = regularizers.WGAN_Reg(self.h, n_critic, c)
         elif self.comboBox.currentText() == "WGAN-GP Regularizer":
-            n_critic = 5
-            gamma = 1.0
-            g_0 = 0.3
+            n_critic = int(self.e6.text())
+            gamma = float(self.e7.text())
+            g_0 = float(self.e8.text())
             self.regularize = regularizers.WGAN_GP_reg(self.h, n_critic, gamma, g_0)
         elif self.comboBox.currentText() == "Moving Average Regularizer":
-            alpha_r = 0
-            alpha_f = 0
-            gamma = 0.99
-            lambd = 0.99
-            self.regularize = regularizers.Moving_Average_Reg(self.h,alpha_r,alpha_f,gamma,lambd)
+            alpha_r = float(self.e9.text())
+            alpha_f = float(self.e10.text())
+            gamma = float(self.e11.text())
+            lambd = float(self.e12.text())
+            self.regularize = regularizers.Moving_Average_Reg(self.h, alpha_r, alpha_f, gamma, lambd)
         elif self.comboBox.currentText() == "NS-GAN with no Regularizer":
             self.regularize = regularizers.No_Reg_Non_Sat(self.h)
         elif self.comboBox.currentText() == "Consensus Optimization Regularizer":
