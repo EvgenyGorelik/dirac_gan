@@ -76,15 +76,11 @@ class Plot2D(QtWidgets.QMainWindow):
         self.e5.setAlignment(Qt.AlignRight)
         wgan_flo = QFormLayout()
         wgan_flo.addRow("Descriminator Iterations", self.e4)
-        wgan_flo.addRow("c", self.e5)
+        wgan_flo.addRow("clip value", self.e5)
         wgan_textbox = QGroupBox()
         wgan_textbox.setTitle('WGAN Settings')
         wgan_textbox.setLayout(wgan_flo)
 
-        self.e6 = QLineEdit("5")
-        self.e6.setValidator(QtGui.QIntValidator())
-        self.e6.setMaxLength(5)
-        self.e6.setAlignment(Qt.AlignRight)
         self.e7 = QLineEdit("1")
         self.e7.setValidator(QtGui.QDoubleValidator())
         self.e7.setMaxLength(5)
@@ -94,7 +90,6 @@ class Plot2D(QtWidgets.QMainWindow):
         self.e8.setMaxLength(5)
         self.e8.setAlignment(Qt.AlignRight)
         wgan_gp_flo = QFormLayout()
-        wgan_gp_flo.addRow("Descriminator Iterations", self.e6)
         wgan_gp_flo.addRow("gamma", self.e7)
         wgan_gp_flo.addRow("g_0", self.e8)
         wgan_gp_textbox = QGroupBox()
@@ -126,12 +121,23 @@ class Plot2D(QtWidgets.QMainWindow):
         ma_textbox.setTitle('Moving-Average Settings')
         ma_textbox.setLayout(ma_flo)
 
+        self.e13 = QLineEdit("1")
+        self.e13.setValidator(QtGui.QDoubleValidator())
+        self.e13.setMaxLength(5)
+        self.e13.setAlignment(Qt.AlignRight)
+        in_flo = QFormLayout()
+        in_flo.addRow("std", self.e13)
+        in_textbox = QGroupBox()
+        in_textbox.setTitle('Instance Noise Settings')
+        in_textbox.setLayout(in_flo)
+
         param_flo = QHBoxLayout()
         param_flo.addWidget(textbox)
         param_flo.addWidget(r1_textbox)
         param_flo.addWidget(wgan_textbox)
         param_flo.addWidget(wgan_gp_textbox)
         param_flo.addWidget(ma_textbox)
+        param_flo.addWidget(in_textbox)
         param_textbox = QGroupBox()
         param_textbox.setTitle('Settings')
         param_textbox.setLayout(param_flo)
@@ -184,10 +190,9 @@ class Plot2D(QtWidgets.QMainWindow):
             c = float(self.e5.text())
             self.regularize = regularizers.WGAN_Reg(self.h, n_critic, c)
         elif self.comboBox.currentText() == "WGAN-GP Regularizer":
-            n_critic = int(self.e6.text())
             gamma = float(self.e7.text())
             g_0 = float(self.e8.text())
-            self.regularize = regularizers.WGAN_GP_reg(self.h, n_critic, gamma, g_0)
+            self.regularize = regularizers.WGAN_GP_reg(self.h, gamma, g_0)
         elif self.comboBox.currentText() == "Moving Average Regularizer":
             alpha_r = float(self.e9.text())
             alpha_f = float(self.e10.text())
@@ -199,7 +204,8 @@ class Plot2D(QtWidgets.QMainWindow):
         elif self.comboBox.currentText() == "Consensus Optimization Regularizer":
             self.regularize = regularizers.Reg_Cons_Opt(self.h)
         elif self.comboBox.currentText() == "Instance Noise Regularizer":
-            self.regularize = regularizers.Reg_Inst_Noise(self.h)
+            std = float(self.e13.text())
+            self.regularize = regularizers.Reg_Inst_Noise(self.h,std)
 
         # initialize theta and phi for each sample
         self.theta = np.random.rand(self.n, 1)*2-1
