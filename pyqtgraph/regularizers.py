@@ -68,25 +68,22 @@ class WGAN_Reg():
 
 
 class WGAN_GP_reg():
-    def __init__(self, h, n_critic, gamma, g_0):
+    def __init__(self, h, gamma, g_0):
         self.h = h
-        self.n_critic = n_critic
         self.gamma = gamma
         self.g_0 = g_0
 
     # update step in Alternating Gradient Descent
     def AGD_step(self, theta, psi):
-        for i in range(self.n_critic):
-            psi += self.h * (theta - np.sign(psi) * self.gamma * (np.abs(psi) - self.g_0))
         theta -= self.h * psi
+        psi += self.h * (theta - np.sign(psi) * self.gamma * (np.abs(psi) - self.g_0))
         return theta, psi
 
 
     # update step in Simultaneous Gradient Descent
     def SGD_step(self, theta, psi):
         psi_old = psi*1
-        for i in range(self.n_critic):
-            psi += self.h * (theta - np.sign(psi) * self.gamma * (np.abs(psi) - self.g_0))
+        psi += self.h * (theta - np.sign(psi) * self.gamma * (np.abs(psi) - self.g_0))
         theta -= self.h * psi_old
         return theta, psi
 
@@ -264,8 +261,9 @@ class Reg_Cons_Opt():
 
 
 class Reg_Inst_Noise():
-    def __init__(self, h):
+    def __init__(self, h, std):
         self.h = h
+        self.std = std
 
     # f function as defined in paper
     def f(self, t):
@@ -292,9 +290,9 @@ class Reg_Inst_Noise():
         return self.df((theta + t_noise) * phi) * (theta + t_noise) - self.df(-x_noise * phi) * x_noise
 
     # update step in Alternating Gradient Descent
-    def AGD_step(self, theta, phi, std=1):
-        t_noise = np.random.normal(scale=std, size=1000)
-        x_noise = np.random.normal(scale=std, size=1000)
+    def AGD_step(self, theta, phi):
+        t_noise = np.random.normal(scale=self.std, size=1000)
+        x_noise = np.random.normal(scale=self.std, size=1000)
         theta = np.full_like(t_noise, theta)
         phi_vec = np.full_like(theta, phi)
         theta -= self.h * self.dL_theta(theta, phi, t_noise)
@@ -303,10 +301,10 @@ class Reg_Inst_Noise():
 
 
     # update step in Simultaneous Gradient Descent
-    def SGD_step(self, theta, phi, std=1):
+    def SGD_step(self, theta, phi):
         theta_old = theta*1
-        t_noise = np.random.normal(scale=std, size=1000)
-        x_noise = np.random.normal(scale=std, size=1000)
+        t_noise = np.random.normal(scale=self.std, size=1000)
+        x_noise = np.random.normal(scale=self.std, size=1000)
         theta = np.full_like(t_noise, theta)
         phi_vec = np.full_like(theta, phi)
         theta -= self.h * self.dL_theta(theta, phi, t_noise)
